@@ -8,8 +8,10 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationSummaryBufferMemory
 llm = AzureChatOpenAI(
-	openai_api_version="2024-02-01",
-	azure_deployment="gpt-4",
+        azure_endpoint=os.environ['ENDPOINT'],
+        openai_api_key=os.environ['KEY'],
+        openai_api_version="2024-02-01",
+        deployment_name=os.environ['DEPLOYMENT'],
 )
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
 app = Flask(__name__)
