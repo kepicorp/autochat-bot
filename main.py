@@ -1,12 +1,16 @@
 from flask import Flask, render_template,jsonify,request
 from flask_cors import CORS
 import requests,openai,os
-from dotenv.main import load_dotenv
-from langchain.llms import OpenAI
+from dotenv import load_dotenv
+load_dotenv()
+from langchain_openai import AzureChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationSummaryBufferMemory
-llm = OpenAI()
+llm = AzureChatOpenAI(
+	openai_api_version="2024-02-01",
+	azure_deployment="gpt-4",
+)
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=100)
 app = Flask(__name__)
 CORS(app)
@@ -17,13 +21,17 @@ def index():
 
 @app.route('/data', methods=['POST'])
 def get_data():
+    app.logger.info('###-----> get data called')
     data = request.get_json()
     text=data.get('data')
     user_input = text
     try:
         conversation = ConversationChain(llm=llm,memory=memory)
+        app.logger.info('###-------> try conversationChain')
         output = conversation.predict(input=user_input)
-        memory.save_context({"input": user_input}, {"output": output})
+        app.logger.info('###-------> output finished')
+#        memory.save_context({"input": user_input}, {"output": output})
+        app.logger.info('###---------> saved in memory')
         return jsonify({"response":True,"message":output})
     except Exception as e:
         print(e)
